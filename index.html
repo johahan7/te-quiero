@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Gatito Interactivo</title>
+  <title>Gatito Interactivo Doble</title>
   <style>
     body {
       margin: 0;
@@ -23,14 +23,10 @@
       background: transparent url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
       animation: animStar 60s linear infinite;
     }
-
     .stars::after { animation-duration: 120s; opacity: 0.5; }
     .stars::before { animation-duration: 180s; opacity: 0.3; }
 
-    @keyframes animStar {
-      from { transform: translateY(0); }
-      to { transform: translateY(-1000px); }
-    }
+    @keyframes animStar { from { transform: translateY(0); } to { transform: translateY(-1000px); } }
 
     .cat-container {
       position: absolute;
@@ -48,7 +44,6 @@
 
     .message {
       position: absolute;
-      top: 75%;
       left: 50%;
       transform: translateX(-50%);
       font-size: 26px;
@@ -58,7 +53,10 @@
       z-index: 3;
     }
 
-    .confetti {
+    #msg1 { top: 75%; }        /* primer gatito, mensaje abajo */
+    #msg2 { top: 20%; }        /* segundo gatito, mensaje arriba */
+
+    .emoji {
       position: absolute;
       font-size: 24px;
       animation: floatUp 2s ease forwards;
@@ -73,70 +71,90 @@
 </head>
 <body>
   <div class="stars"></div>
-  <div class="cat-container" id="catBox">
-    <img src="https://i.postimg.cc/yddtxzmj/IMG-3480.png" class="cat" id="catImg">
+
+  <!-- Primer gatito -->
+  <div class="cat-container" id="catBox1">
+    <img src="https://i.postimg.cc/yddtxzmj/IMG-3480-removebg-preview.png" class="cat" id="cat1">
   </div>
-  <div class="message" id="msg">te quiero mucho bobita</div>
+
+  <!-- Segundo gatito -->
+  <div class="cat-container" id="catBox2" style="display:none;">
+    <img src="https://i.postimg.cc/bJ9PFV4b/IMG-3492.png" class="cat" id="cat2">
+  </div>
+
+  <div class="message" id="msg1">te quiero mucho bobita</div>
+  <div class="message" id="msg2">eres una dormilona</div>
 
   <script>
-    const cat = document.getElementById("catImg");
-    const msg = document.getElementById("msg");
-    const catBox = document.getElementById("catBox");
+    // Primer gatito
+    const cat1 = document.getElementById("cat1");
+    const catBox1 = document.getElementById("catBox1");
+    const msg1 = document.getElementById("msg1");
+    let clicks1 = 0;
+    const moveClicks1 = 3;
+    const explodeClick1 = 7;
 
-    let totalClicks = 0;
-    const moveClicks = 3;
-    const explodeClick = 7;
-
-    cat.addEventListener("click", () => {
-      totalClicks++;
-
-      if (totalClicks <= moveClicks) {
-        moveCat();
-      } else if (totalClicks < explodeClick) {
-        const growCount = totalClicks - moveClicks;
-        cat.style.transform = `scale(${1 + 0.2 * growCount})`;
-      } else {
-        explodeCat();
-      }
+    cat1.addEventListener("click", () => {
+      clicks1++;
+      if (clicks1 <= moveClicks1) moveCat(catBox1, cat1);
+      else if (clicks1 < explodeClick1) cat1.style.transform = `scale(${1 + 0.2 * (clicks1 - moveClicks1)})`;
+      else explodeCat1();
     });
 
-    function moveCat() {
+    function explodeCat1() {
+      cat1.style.display = "none";
+      msg1.style.display = "block";
+      createEmojis(catBox1, "😊", 30);
+      setTimeout(() => {
+        document.getElementById("catBox2").style.display = "block";
+      }, 1000);
+    }
+
+    // Segundo gatito
+    const cat2 = document.getElementById("cat2");
+    const catBox2 = document.getElementById("catBox2");
+    const msg2 = document.getElementById("msg2");
+    let clicks2 = 0;
+    const explodeClick2 = 9;
+
+    cat2.addEventListener("click", () => {
+      clicks2++;
+      if (clicks2 < explodeClick2) cat2.style.transform = `scale(${1 + 0.15 * clicks2})`;
+      else explodeCat2();
+    });
+
+    function explodeCat2() {
+      cat2.style.display = "none";
+      msg2.style.display = "block";
+      createEmojis(catBox2, "🍞", 20);
+      createEmojis(catBox2, "💗", 20);
+    }
+
+    // Funciones comunes
+    function moveCat(box, cat) {
       const maxX = window.innerWidth - cat.offsetWidth;
       const maxY = window.innerHeight - cat.offsetHeight;
-      const rect = catBox.getBoundingClientRect();
+      const rect = box.getBoundingClientRect();
       let newX = rect.left + (Math.random() * 200 - 100);
       let newY = rect.top + (Math.random() * 200 - 100);
-
       newX = Math.max(0, Math.min(newX, maxX));
       newY = Math.max(0, Math.min(newY, maxY));
-
-      catBox.style.left = `${newX + cat.offsetWidth/2}px`;
-      catBox.style.top = `${newY + cat.offsetHeight/2}px`;
+      box.style.left = `${newX + cat.offsetWidth/2}px`;
+      box.style.top = `${newY + cat.offsetHeight/2}px`;
     }
 
-    function explodeCat() {
-      cat.style.display = "none";
-      msg.style.display = "block";
-      createConfetti();
-    }
-
-    function createConfetti() {
-      const rect = catBox.getBoundingClientRect();
+    function createEmojis(box, emoji, count) {
+      const rect = box.getBoundingClientRect();
       const xCenter = rect.left + rect.width / 2;
       const yCenter = rect.top + rect.height / 2;
-
-      for (let i = 0; i < 30; i++) {
-        const confetti = document.createElement("div");
-        confetti.classList.add("confetti");
-        confetti.innerHTML = "😊";
-        document.body.appendChild(confetti);
-
-        confetti.style.left = `${xCenter + (Math.random() * 100 - 50)}px`;
-        confetti.style.top = `${yCenter + (Math.random() * 100 - 50)}px`;
-
-        setTimeout(() => {
-          confetti.remove();
-        }, 2000);
+      for (let i = 0; i < count; i++) {
+        const e = document.createElement("div");
+        e.classList.add("emoji");
+        e.innerHTML = emoji;
+        document.body.appendChild(e);
+        e.style.left = `${xCenter + (Math.random() * 100 - 50)}px`;
+        e.style.top = `${yCenter + (Math.random() * 100 - 50)}px`;
+        setTimeout(() => e.remove(), 2000);
       }
     }
   </script>
